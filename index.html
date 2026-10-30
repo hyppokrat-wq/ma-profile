@@ -1,0 +1,370 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Метаболический профиль МА</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Golos+Text:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: sepia folio. Brand band on top, intake form left, the MA profile verdict + detailed sheet right; one column on phones */
+:root{
+  --paper:#f4eee3; --sheet:#fbf8f2; --ink:#3b2a1d; --muted:#7a6553; --line:#e0d4c2;
+  --sepia:#8a5a2b; --sepia-soft:#efe3d1;
+  --ok:#3f7a3a; --ok-bg:#e6efdc; --mid:#9a6200; --mid-bg:#f6e8c9; --hi:#a8321f; --hi-bg:#f6dfd8; --dm:#7d1d4a; --dm-bg:#f2dbe6; --na:#86786a; --na-bg:#efe9df;
+  --f-display:"Cormorant Garamond","Iowan Old Style",Georgia,serif;
+  --f-body:"Golos Text",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#17120d; --sheet:#201912; --ink:#ecdfcc; --muted:#ab9783; --line:#3a2e22;
+  --sepia:#d6a671; --sepia-soft:#2d2318;
+  --ok:#93cf86; --ok-bg:#1f2c18; --mid:#e9b65b; --mid-bg:#33270f; --hi:#f29a86; --hi-bg:#3a1d16; --dm:#f09ac2; --dm-bg:#3a1a29; --na:#ab9783; --na-bg:#2a2219;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#17120d; --sheet:#201912; --ink:#ecdfcc; --muted:#ab9783; --line:#3a2e22;
+  --sepia:#d6a671; --sepia-soft:#2d2318;
+  --ok:#93cf86; --ok-bg:#1f2c18; --mid:#e9b65b; --mid-bg:#33270f; --hi:#f29a86; --hi-bg:#3a1d16; --dm:#f09ac2; --dm-bg:#3a1a29; --na:#ab9783; --na-bg:#2a2219;
+  color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5}
+.wrap{max-width:1200px;margin:0 auto;padding-block:24px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+
+.brand{display:flex;flex-wrap:wrap;align-items:center;gap:16px 22px;padding-bottom:18px;border-bottom:1px solid var(--line);margin-bottom:20px}
+.emblem{width:76px;height:76px;flex:none;color:var(--sepia)}
+.brand-text{flex:1;min-width:240px}
+.mono{font-family:var(--f-display);font-weight:700;font-size:15px;letter-spacing:.32em;color:var(--sepia);text-transform:uppercase}
+h1{font-family:var(--f-display);font-weight:600;font-size:clamp(28px,4vw,40px);line-height:1.1;margin:2px 0 6px;text-wrap:balance}
+.lede{color:var(--muted);margin:0;max-width:64ch}
+
+.controls{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;margin-bottom:18px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;padding:3px;background:var(--sheet)}
+.seg button{border:0;background:transparent;border-radius:999px;padding:5px 13px;font:500 13.5px var(--f-body);color:var(--muted);cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--sepia);color:var(--sheet)}
+.ctl-label{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-right:6px}
+.ctl{display:flex;align-items:center}
+.spacer{flex:1}
+.btn{font:500 13.5px var(--f-body);border-radius:8px;padding:7px 13px;cursor:pointer;border:1px solid var(--line);background:var(--sheet);color:var(--ink)}
+button:focus-visible,input:focus-visible{outline:2px solid var(--sepia);outline-offset:2px}
+
+.grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:20px;align-items:start}
+@media (max-width:880px){.grid{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--sheet);border:1px solid var(--line);border-radius:10px;padding:16px 18px 18px}
+.panel+.panel{margin-top:14px}
+.panel h2{font-family:var(--f-display);font-size:21px;font-weight:600;margin:0 0 10px;color:var(--ink)}
+.hint{font-size:13px;color:var(--muted);margin:-4px 0 12px}
+.fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 14px}
+@media (max-width:480px){.fields{grid-template-columns:minmax(0,1fr)}}
+.field label{display:block;font-size:13px;color:var(--muted);margin-bottom:4px}
+.inp{display:flex;align-items:center;border:1px solid var(--line);border-radius:8px;background:var(--paper);overflow:hidden}
+.inp input{flex:1;min-width:0;border:0;background:transparent;color:var(--ink);font:500 15px var(--f-mono);padding:8px 10px}
+.inp span{font-size:12px;color:var(--muted);padding-right:10px;white-space:nowrap}
+.ogtt{overflow-x:auto}
+.ogtt table{border-collapse:collapse;width:100%;min-width:340px}
+.ogtt th{font-size:12px;font-weight:500;color:var(--muted);text-align:left;padding:0 6px 6px}
+.ogtt td{padding:4px 6px}
+.ogtt td:first-child{font:600 13px var(--f-mono);color:var(--muted);white-space:nowrap}
+.checks{display:grid;gap:8px}
+.check{display:flex;gap:10px;align-items:flex-start;font-size:14px;cursor:pointer}
+.check input{margin-top:3px;accent-color:var(--sepia);width:16px;height:16px;flex:none}
+.example-note{display:inline-block;font-size:12px;background:var(--mid-bg);color:var(--mid);border-radius:6px;padding:3px 8px;margin-bottom:12px}
+
+.results{position:sticky;top:calc(env(safe-area-inset-top,0px) + 12px)}
+@media (max-width:880px){.results{position:static}}
+.verdict{border-radius:10px;padding:16px 18px;margin-bottom:6px;border:1px solid var(--line);background:var(--paper)}
+.verdict .scale-name{font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:var(--sepia);font-weight:600}
+.verdict .zone{font-family:var(--f-display);font-size:28px;font-weight:600;line-height:1.15;margin:4px 0 6px}
+.verdict .zone.ok{color:var(--ok)} .verdict .zone.mid{color:var(--mid)} .verdict .zone.hi{color:var(--hi)} .verdict .zone.dm{color:var(--dm)} .verdict .zone.na{color:var(--muted)}
+.meter{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin:10px 0 4px}
+.meter i{display:block;height:6px;border-radius:3px;background:var(--line)}
+.meter i.on.ok{background:var(--ok)} .meter i.on.mid{background:var(--mid)} .meter i.on.hi{background:var(--hi)} .meter i.on.dm{background:var(--dm)}
+.score{font:600 13px var(--f-mono);color:var(--muted)}
+.factors{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 0}
+.next{margin:12px 0 0;padding:0 0 0 18px;font-size:14px}
+.next li+li{margin-top:4px}
+.partial{font-size:13px;color:var(--muted);margin:10px 0 0}
+
+.group-title{font-family:var(--f-display);font-size:19px;font-weight:600;margin:18px 0 0;color:var(--sepia)}
+.row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 14px;padding:11px 2px;border-top:1px solid var(--line)}
+.row .name{font-weight:600}
+.row .val{font:600 19px var(--f-mono);text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.row .val small{font-size:12px;font-weight:400;color:var(--muted)}
+.row .desc{grid-column:1/-1;font-size:13.5px;color:var(--muted);display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center}
+.row .formula{grid-column:1/-1;font:12px var(--f-mono);color:var(--muted);opacity:.85}
+.chip{display:inline-block;font-size:12px;font-weight:600;border-radius:999px;padding:2px 10px;white-space:nowrap}
+.chip.ok{background:var(--ok-bg);color:var(--ok)} .chip.mid{background:var(--mid-bg);color:var(--mid)}
+.chip.hi{background:var(--hi-bg);color:var(--hi)} .chip.dm{background:var(--dm-bg);color:var(--dm)} .chip.na{background:var(--na-bg);color:var(--na)}
+.foot{font-size:12.5px;color:var(--muted);margin-top:22px;max-width:84ch;border-top:1px solid var(--line);padding-top:14px}
+.foot strong{color:var(--ink)}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="brand">
+    <svg class="emblem" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" aria-hidden="true">
+      <circle cx="50" cy="52" r="42"/>
+      <rect x="18" y="22" width="64" height="72"/>
+      <circle cx="50" cy="31" r="6.5"/>
+      <path d="M50 37.5 V66"/>
+      <path d="M19 47 H81"/>
+      <path d="M50 46 L23 34 M50 46 L77 34"/>
+      <path d="M50 66 L37 94 M50 66 L63 94"/>
+      <path d="M50 66 L28 89 M50 66 L72 89" opacity=".55"/>
+    </svg>
+    <div class="brand-text">
+      <div class="mono" data-ru="Методика МА" data-en="The MA method"></div>
+      <h1 data-ru="Метаболический профиль" data-en="Metabolic profile"></h1>
+      <p class="lede" data-ru="Разберитесь в своих анализах: калькулятор переводит единицы, считает индексы инсулинорезистентности и сводит их вместе с клиническими признаками в итоговую оценку." data-en="Make sense of your lab results: the calculator converts units, computes insulin resistance indices and combines them with clinical signs into one overall profile."></p>
+    </div>
+  </div>
+
+  <div class="controls">
+    <div class="ctl"><span class="ctl-label" data-ru="Пол" data-en="Sex"></span>
+      <div class="seg" id="seg-sex"><button type="button" data-v="f" data-ru="Женщина" data-en="Female"></button><button type="button" data-v="m" data-ru="Мужчина" data-en="Male"></button></div></div>
+    <div class="ctl"><span class="ctl-label" data-ru="Единицы" data-en="Units"></span>
+      <div class="seg" id="seg-units"><button type="button" data-v="mmol" data-ru="ммоль/л" data-en="mmol/L"></button><button type="button" data-v="mg" data-ru="мг/дл" data-en="mg/dL"></button></div></div>
+    <div class="ctl"><div class="seg" id="seg-lang"><button type="button" data-v="ru">RU</button><button type="button" data-v="en">EN</button></div></div>
+    <span class="spacer"></span>
+    <button type="button" class="btn" id="btn-example" data-ru="Пример" data-en="Example"></button>
+    <button type="button" class="btn" id="btn-clear" data-ru="Очистить" data-en="Clear"></button>
+  </div>
+
+  <div class="grid">
+    <form id="form" autocomplete="off" onsubmit="return false">
+      <span class="example-note" id="example-note" data-ru="В форме вымышленный пример" data-en="The form shows a made-up example"></span>
+
+      <section class="panel">
+        <h2 data-ru="Натощак" data-en="Fasting"></h2>
+        <div class="fields">
+          <div class="field"><label for="g0" data-ru="Глюкоза" data-en="Glucose"></label><div class="inp"><input id="g0" inputmode="decimal"><span class="u-c"></span></div></div>
+          <div class="field"><label for="i0" data-ru="Инсулин" data-en="Insulin"></label><div class="inp"><input id="i0" inputmode="decimal"><span class="u-i"></span></div></div>
+          <div class="field"><label for="tg" data-ru="Триглицериды" data-en="Triglycerides"></label><div class="inp"><input id="tg" inputmode="decimal"><span class="u-c"></span></div></div>
+          <div class="field"><label for="hdl" data-ru="ЛПВП" data-en="HDL cholesterol"></label><div class="inp"><input id="hdl" inputmode="decimal"><span class="u-c"></span></div></div>
+          <div class="field"><label for="a1c" data-ru="HbA1c" data-en="HbA1c"></label><div class="inp"><input id="a1c" inputmode="decimal"><span>%</span></div></div>
+          <div class="field"><label for="waist" data-ru="Окружность талии" data-en="Waist circumference"></label><div class="inp"><input id="waist" inputmode="decimal"><span class="u-cm"></span></div></div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2 data-ru="ОГТТ с 75 г глюкозы" data-en="75 g OGTT"></h2>
+        <p class="hint" data-ru="Необязательно. Для индекса Matsuda нужны 0 и 120 мин и хотя бы одна точка между ними. Точка 0 берётся из блока «Натощак»." data-en="Optional. The Matsuda index needs 0 and 120 min plus at least one point in between. Time 0 comes from the Fasting block."></p>
+        <div class="ogtt"><table>
+          <thead><tr><th data-ru="Мин" data-en="Min"></th><th><span data-ru="Глюкоза" data-en="Glucose"></span>, <span class="u-c"></span></th><th><span data-ru="Инсулин" data-en="Insulin"></span>, <span class="u-i"></span></th></tr></thead>
+          <tbody>
+            <tr><td>30</td><td><div class="inp"><input id="g30" inputmode="decimal" aria-label="30"></div></td><td><div class="inp"><input id="i30" inputmode="decimal" aria-label="30"></div></td></tr>
+            <tr><td>60</td><td><div class="inp"><input id="g60" inputmode="decimal" aria-label="60"></div></td><td><div class="inp"><input id="i60" inputmode="decimal" aria-label="60"></div></td></tr>
+            <tr><td>90</td><td><div class="inp"><input id="g90" inputmode="decimal" aria-label="90"></div></td><td><div class="inp"><input id="i90" inputmode="decimal" aria-label="90"></div></td></tr>
+            <tr><td>120</td><td><div class="inp"><input id="g120" inputmode="decimal" aria-label="120"></div></td><td><div class="inp"><input id="i120" inputmode="decimal" aria-label="120"></div></td></tr>
+          </tbody></table></div>
+      </section>
+
+      <section class="panel">
+        <h2 data-ru="Клинические признаки" data-en="Clinical signs"></h2>
+        <p class="hint" data-ru="Отметьте то, что есть сейчас или было в анамнезе." data-en="Tick what applies now or in your history."></p>
+        <div class="checks">
+          <label class="check"><input type="checkbox" id="c_acanth"><span data-ru="Потемнение и огрубение кожи на шее, в подмышках, на локтях (acanthosis nigricans)" data-en="Dark, velvety skin on the neck, armpits or elbows (acanthosis nigricans)"></span></label>
+          <label class="check"><input type="checkbox" id="c_acro"><span data-ru="Множественные мелкие папилломы на шее, в подмышках" data-en="Multiple skin tags on the neck or armpits"></span></label>
+          <label class="check" id="w-pcos"><input type="checkbox" id="c_pcos"><span data-ru="СПКЯ или нарушения цикла с избытком андрогенов" data-en="PCOS or irregular cycles with androgen excess"></span></label>
+          <label class="check" id="w-gdm"><input type="checkbox" id="c_gdm"><span data-ru="Гестационный диабет или ребёнок весом более 4 кг при рождении" data-en="Gestational diabetes or a baby over 4 kg (8.8 lb) at birth"></span></label>
+          <label class="check"><input type="checkbox" id="c_liver"><span data-ru="Жировая болезнь печени (стеатоз на УЗИ или повышенные АЛТ, ГГТ)" data-en="Fatty liver disease (steatosis on ultrasound or raised ALT, GGT)"></span></label>
+          <label class="check"><input type="checkbox" id="c_htn"><span data-ru="Повышенное артериальное давление" data-en="High blood pressure"></span></label>
+          <label class="check"><input type="checkbox" id="c_fam"><span data-ru="Сахарный диабет 2 типа у родителей, братьев или сестёр" data-en="Type 2 diabetes in a parent or sibling"></span></label>
+        </div>
+      </section>
+    </form>
+
+    <section class="panel results" aria-live="polite">
+      <div class="verdict" id="verdict"></div>
+      <div id="out"></div>
+    </section>
+  </div>
+
+  <p class="foot" data-ru="<strong>Образовательный инструмент.</strong> Калькулятор помогает разобраться в анализах и не ставит диагноз. Обсудите результаты с врачом. Пороговые значения ориентировочные и различаются между популяциями и лабораториями; методы определения инсулина не стандартизированы, поэтому инсулин и HOMA-IR сравнивайте в одной лаборатории. Данные не покидают ваш браузер. © Методика МА" data-en="<strong>Educational tool.</strong> This calculator helps you understand your lab results and does not provide a diagnosis. Discuss your results with a physician. Thresholds are approximate and vary between populations and laboratories; insulin assays are not standardized, so compare insulin and HOMA-IR within one lab. Your data never leaves your browser. © The MA method"></p>
+</div>
+
+<script>
+(function(){
+  var IDS=["g0","i0","tg","hdl","a1c","waist","g30","i30","g60","i60","g90","i90","g120","i120"];
+  var CHECKS=["c_acanth","c_acro","c_pcos","c_gdm","c_liver","c_htn","c_fam"];
+  var GLU=["g0","g30","g60","g90","g120"];
+  var EX_MMOL={g0:5.4,i0:14,tg:1.8,hdl:1.1,a1c:5.8,waist:94,g30:8.6,i30:78,g60:8.9,i60:110,g90:7.6,i90:95,g120:6.9,i120:84};
+  var KEY="ma-profile-v1";
+  var st={lang:"ru",units:"mmol",sex:"f"};
+  function $(id){return document.getElementById(id)}
+  function tr(ru,en){return st.lang==="ru"?ru:en}
+  function factor(k){return GLU.indexOf(k)>=0?18:k==="tg"?88.5:k==="hdl"?38.67:1}
+  function dec(k){if(st.units==="mg"&&factor(k)!==1)return 0;if(GLU.indexOf(k)>=0)return 1;if(k==="tg"||k==="hdl")return 2;if(k==="a1c")return 1;return 0}
+  function f(n,d){var s=n.toFixed(d);return st.lang==="ru"?s.replace(".",","):s}
+  function raw(k){var v=$(k).value.trim().replace(",",".");if(!v)return null;var n=parseFloat(v);return isFinite(n)&&n>0?n:null}
+  function mm(k){var v=raw(k);if(v==null)return null;return st.units==="mg"?v/factor(k):v}
+  function UC(){return st.units==="mg"?tr("мг/дл","mg/dL"):tr("ммоль/л","mmol/L")}
+  function conc(k,v){return st.units==="mg"?f(v*factor(k),0):f(v,GLU.indexOf(k)>=0?1:2)}
+  function chip(l,t){return '<span class="chip '+l+'">'+t+'</span>'}
+  var LBL={ok:["норма","normal"],mid:["пограничный","borderline"],hi:["повышен","elevated"]};
+  function lbl(l,alt){if(alt)return alt;var a=LBL[l];return tr(a[0],a[1])}
+
+  function row(o){
+    if(o.value==null)return '<div class="row"><span class="name">'+o.name+'</span><span class="val">—</span><div class="desc">'+chip("na",tr("нет данных","no data"))+'<span>'+tr("Нужно: ","Needs: ")+o.need+'</span></div></div>';
+    return '<div class="row"><span class="name">'+o.name+'</span><span class="val">'+o.value+(o.unit?' <small>'+o.unit+'</small>':'')+'</span><div class="desc">'+chip(o.level,o.label)+(o.note?'<span>'+o.note+'</span>':'')+'</div>'+(o.formula?'<div class="formula">'+o.formula+'</div>':'')+'</div>';
+  }
+
+  function calc(){
+    var d={};IDS.forEach(function(k){d[k]=mm(k)});
+    var score=0,factors=[],labCount=0,dm=false,out="";
+    function add(level,name,pts){var p=pts!=null?pts:(level==="hi"?2:level==="mid"?1:0);if(p>0){score+=p;factors.push({l:level==="dm"?"dm":p>=2?"hi":"mid",n:name})}}
+
+    // ---------- IR indices
+    out+='<div class="group-title">'+tr("Инсулинорезистентность","Insulin resistance")+'</div>';
+    if(d.g0&&d.i0){
+      var h=d.g0*d.i0/22.5,l=h<2.5?"ok":h<=2.7?"mid":"hi";labCount++;add(l,"HOMA-IR");
+      var n=l==="ok"?tr("Чувствительность печени к инсулину в норме","Normal hepatic insulin sensitivity"):l==="mid"?tr("Пограничное значение, стоит пересдать","Borderline, worth repeating"):tr("Признак инсулинорезистентности, преимущественно печёночной","Sign of insulin resistance, mainly hepatic");
+      if(d.g0>=7)n+=tr(". При глюкозе ≥ 7 ммоль/л индекс ненадёжен",". Unreliable when fasting glucose ≥ 126 mg/dL");
+      out+=row({name:"HOMA-IR",value:f(h,2),level:l,label:lbl(l),note:n,formula:tr("глюкоза (ммоль/л) × инсулин / 22,5 · порог ≈ 2,5–2,7","glucose (mmol/L) × insulin / 22.5 · cut-off ≈ 2.5–2.7")});
+    } else out+=row({name:"HOMA-IR",value:null,need:tr("глюкоза и инсулин натощак","fasting glucose and insulin")});
+
+    if(d.tg&&d.g0){
+      var tyg=Math.log(d.tg*88.5*d.g0*18/2),l2=tyg<8.5?"ok":tyg<=8.8?"mid":"hi";labCount++;add(l2,"TyG");
+      var ex=d.waist?tr(" · TyG × талия = "," · TyG × waist = ")+f(tyg*d.waist,0):"";
+      out+=row({name:tr("TyG-индекс","TyG index"),value:f(tyg,2),level:l2,label:lbl(l2),note:(l2==="hi"?tr("Вероятная инсулинорезистентность","Likely insulin resistance"):l2==="mid"?tr("Пограничная зона","Borderline zone"):tr("Без признаков ИР","No signs of insulin resistance"))+ex,formula:"ln[TG × glucose / 2], mg/dL · "+tr("порог ≈ 8,5–8,8","cut-off ≈ 8.5–8.8")});
+    } else out+=row({name:tr("TyG-индекс","TyG index"),value:null,need:tr("триглицериды и глюкоза натощак","fasting triglycerides and glucose")});
+
+    if(d.tg&&d.hdl){
+      var r=d.tg/d.hdl,lim=st.sex==="f"?[0.9,1.3]:[1.1,1.5],l3=r<lim[0]?"ok":r<lim[1]?"mid":"hi";labCount++;add(l3,tr("ТГ/ЛПВП","TG/HDL"));
+      var main=st.units==="mg"?f(r*2.29,2):f(r,2),other=st.units==="mg"?f(r,2)+" mmol/L":f(r*2.29,2)+tr(" в мг/дл"," in mg/dL");
+      out+=row({name:tr("ТГ / ЛПВП","TG / HDL"),value:main,unit:UC(),level:l3,label:lbl(l3),note:other+(l3==="hi"?tr(". Подозрение на ИР и атерогенный профиль",". Suggests insulin resistance and an atherogenic profile"):""),formula:tr("порог для ","cut-off for ")+(st.sex==="f"?tr("женщин ≈ 1,3 ммоль/л (3,0 мг/дл)","women ≈ 1.3 mmol/L (3.0 mg/dL)"):tr("мужчин ≈ 1,5 ммоль/л (3,5 мг/дл)","men ≈ 1.5 mmol/L (3.5 mg/dL)"))});
+    } else out+=row({name:tr("ТГ / ЛПВП","TG / HDL"),value:null,need:tr("триглицериды и ЛПВП","triglycerides and HDL")});
+
+    var pts=[[d.g0,d.i0]],m=null;[30,60,90,120].forEach(function(t){if(d["g"+t]&&d["i"+t])pts.push([d["g"+t],d["i"+t]])});
+    var hasOgtt=d.g0&&d.i0&&d.g120&&d.i120&&pts.length>=3;
+    if(hasOgtt){
+      var gm=0,im=0;pts.forEach(function(p){gm+=p[0]*18;im+=p[1]});gm/=pts.length;im/=pts.length;
+      m=10000/Math.sqrt(d.g0*18*d.i0*gm*im);var l4=m<2.5?"hi":m<=4?"mid":"ok";labCount++;add(l4,"Matsuda");
+      out+=row({name:tr("Индекс Matsuda","Matsuda index"),value:f(m,2),level:l4,label:l4==="hi"?tr("снижен","low"):lbl(l4),note:(l4==="hi"?tr("Выраженная ИР всего организма","Marked whole-body insulin resistance"):l4==="mid"?tr("Пограничная чувствительность","Borderline sensitivity"):tr("Нормальная чувствительность к инсулину","Normal insulin sensitivity"))+tr(" · точек ОГТТ: "," · OGTT points: ")+pts.length,formula:"10 000 / √(G₀ × I₀ × Gmean × Imean), mg/dL · "+tr("чем ниже, тем хуже","lower is worse")});
+    } else out+=row({name:tr("Индекс Matsuda","Matsuda index"),value:null,need:tr("ОГТТ с инсулином: 0, 120 и хотя бы одна точка между ними","OGTT with insulin: 0, 120 and at least one point between")});
+
+    // ---------- secretion
+    out+='<div class="group-title">'+tr("Секреция инсулина","Insulin secretion")+'</div>';
+    if(d.i120){
+      var peak=Math.max(d.i30||0,d.i60||0,d.i90||0),late=peak>0&&d.i120>peak,l5=d.i120<40?"ok":d.i120<=60?"mid":"hi";
+      if(late&&l5==="ok")l5="mid";add(l5,tr("инсулин через 2 ч","2-h insulin"));
+      var n5=l5==="ok"?tr("Без гиперинсулинемии","No hyperinsulinemia"):l5==="mid"?tr("Умеренно повышен","Moderately raised"):tr("Постпрандиальная гиперинсулинемия","Post-load hyperinsulinemia");
+      if(late)n5+=tr(". Запоздалый пик: на 120 мин инсулин выше, чем в промежуточных точках",". Delayed peak: insulin at 120 min exceeds earlier points");
+      out+=row({name:tr("Инсулин через 2 часа","2-hour insulin"),value:f(d.i120,0),unit:tr("мкЕд/мл","µU/mL"),level:l5,label:lbl(l5),note:n5,formula:tr("ориентир < 40; > 60 — гиперинсулинемия (стандартных норм нет)","guide < 40; > 60 suggests hyperinsulinemia (no standard ranges)")});
+    } else out+=row({name:tr("Инсулин через 2 часа","2-hour insulin"),value:null,need:tr("инсулин на 120 мин ОГТТ","insulin at 120 min")});
+
+    var igi=null;
+    if(d.g0&&d.i0&&d.g30&&d.i30){
+      var dg=(d.g30-d.g0)*18;
+      if(dg>0){igi=(d.i30-d.i0)/dg;var l6=igi<0.4?"mid":"ok";add(l6,tr("ранняя секреция","early secretion"));
+        out+=row({name:tr("Инсулиногенный индекс","Insulinogenic index"),value:f(igi,2),level:l6,label:l6==="ok"?tr("сохранена","preserved"):tr("снижена","reduced"),note:l6==="ok"?tr("Ранняя фаза секреции инсулина сохранена","Early-phase insulin secretion preserved"):tr("Ранняя фаза секреции снижена: возможный признак истощения бета-клеток","Reduced early-phase secretion: possible sign of beta-cell strain"),formula:"(I₃₀ − I₀) / (G₃₀ − G₀), mg/dL · "+tr("порог ≈ 0,4","cut-off ≈ 0.4")});
+      } else out+=row({name:tr("Инсулиногенный индекс","Insulinogenic index"),value:null,need:tr("глюкоза на 30 мин выше исходной","30-min glucose above baseline")});
+    } else out+=row({name:tr("Инсулиногенный индекс","Insulinogenic index"),value:null,need:tr("глюкоза и инсулин на 0 и 30 мин","glucose and insulin at 0 and 30 min")});
+    if(igi!=null&&m!=null){
+      out+='<div class="row"><span class="name">'+tr("Индекс диспозиции","Disposition index")+'</span><span class="val">'+f(igi*m,2)+'</span><div class="desc">'+chip("na",tr("для динамики","for follow-up"))+'<span>'+tr("Инсулиногенный индекс × Matsuda. Порогов нет, сравнивайте у одного человека во времени","Insulinogenic index × Matsuda. No cut-offs; compare in the same person over time")+'</span></div></div>';
+    }
+
+    // ---------- glycemia
+    out+='<div class="group-title">'+tr("Гликемия","Glycemia")+'</div>';
+    if(d.g0){
+      var g=d.g0,l7,c7,n7;
+      if(g<5.6){l7="ok";c7=lbl("ok");n7=tr("Нормогликемия натощак","Normal fasting glucose")}
+      else if(g<6.1){l7="mid";c7=tr("погранично","borderline");n7=tr("Нарушенная гликемия натощак по ADA; норма по ВОЗ и российским критериям","Impaired fasting glucose by ADA criteria (100–125 mg/dL)");add("mid",tr("глюкоза натощак","fasting glucose"),1)}
+      else if(g<7){l7="hi";c7=tr("НГН","IFG");n7=tr("Нарушенная гликемия натощак","Impaired fasting glucose");add("hi",tr("глюкоза натощак","fasting glucose"),2)}
+      else{l7="dm";c7=tr("диапазон СД","diabetes range");n7=tr("Диапазон сахарного диабета, нужно подтверждение у врача","Diabetes range; needs confirmation by a physician");dm=true}
+      out+=row({name:tr("Глюкоза натощак","Fasting glucose"),value:conc("g0",g),unit:UC(),level:l7,label:c7,note:n7});
+    } else out+=row({name:tr("Глюкоза натощак","Fasting glucose"),value:null,need:tr("глюкоза натощак","fasting glucose")});
+
+    if(d.g120){
+      var g2=d.g120,l8=g2<7.8?"ok":g2<11.1?"hi":"dm";
+      if(l8==="hi")add("hi",tr("НТГ","IGT"),2);if(l8==="dm")dm=true;
+      out+=row({name:tr("Глюкоза через 2 часа ОГТТ","2-hour OGTT glucose"),value:conc("g120",g2),unit:UC(),level:l8,label:l8==="ok"?lbl("ok"):l8==="hi"?tr("НТГ","IGT"):tr("диапазон СД","diabetes range"),note:l8==="ok"?tr("Нормальная толерантность к глюкозе","Normal glucose tolerance"):l8==="hi"?tr("Нарушенная толерантность к глюкозе","Impaired glucose tolerance"):tr("Диапазон сахарного диабета, нужно подтверждение","Diabetes range; needs confirmation")});
+    } else out+=row({name:tr("Глюкоза через 2 часа ОГТТ","2-hour OGTT glucose"),value:null,need:tr("глюкоза на 120 мин","glucose at 120 min")});
+
+    if(d.a1c){
+      var a=d.a1c,l9=a<5.7?"ok":a<6.5?"mid":"dm";
+      if(l9==="mid")add("hi",tr("HbA1c","HbA1c"),2);if(l9==="dm")dm=true;
+      out+=row({name:"HbA1c",value:f(a,1),unit:"%",level:l9,label:l9==="ok"?lbl("ok"):l9==="mid"?tr("предиабет","prediabetes"):tr("диапазон СД","diabetes range"),note:(l9==="ok"?tr("Нормальная средняя гликемия","Normal average glucose"):l9==="mid"?tr("5,7–6,4% по критериям ADA","5.7–6.4% by ADA criteria"):tr("Требуется подтверждение повторным анализом","Needs confirmation with a repeat test"))+tr(". Анемия и дефицит железа искажают результат",". Anemia and iron deficiency distort the result")});
+    } else out+=row({name:"HbA1c",value:null,need:tr("гликированный гемоглобин","HbA1c")});
+
+    // ---------- clinical
+    out+='<div class="group-title">'+tr("Клиническая картина","Clinical picture")+'</div>';
+    if(d.waist){
+      var w=d.waist,wl=st.sex==="f"?[80,88]:[94,102],l10=w<wl[0]?"ok":w<wl[1]?"mid":"hi";add(l10,tr("талия","waist"));
+      var shown=st.lang==="en"?f(w,0)+" cm ("+f(w/2.54,1)+" in)":f(w,0);
+      out+=row({name:tr("Окружность талии","Waist circumference"),value:shown,unit:st.lang==="ru"?"см":"",level:l10,label:l10==="ok"?lbl("ok"):l10==="mid"?tr("повышена","raised"):tr("высокая","high"),note:(st.sex==="f"?tr("Женщины: ≥ 80 см по IDF, ≥ 88 см по ATP III","Women: ≥ 80 cm by IDF, ≥ 88 cm by ATP III"):tr("Мужчины: ≥ 94 см по IDF, ≥ 102 см по ATP III","Men: ≥ 94 cm by IDF, ≥ 102 cm by ATP III"))});
+    } else out+=row({name:tr("Окружность талии","Waist circumference"),value:null,need:tr("окружность талии в см","waist in cm")});
+
+    var names={c_acanth:tr("акантоз","acanthosis"),c_acro:tr("папилломы","skin tags"),c_pcos:tr("СПКЯ","PCOS"),c_gdm:tr("ГСД / крупный плод","GDM / large baby"),c_liver:tr("жировая печень","fatty liver"),c_htn:tr("давление","blood pressure"),c_fam:tr("наследственность","family history")};
+    var ticked=[];CHECKS.forEach(function(c){if(st.sex==="m"&&(c==="c_pcos"||c==="c_gdm"))return;if($(c).checked){ticked.push(names[c]);add(c==="c_acanth"?"hi":"mid",names[c],c==="c_acanth"?2:1)}});
+    out+='<div class="row"><span class="name">'+tr("Отмеченные признаки","Signs ticked")+'</span><span class="val">'+ticked.length+'</span><div class="desc">'+(ticked.length?chip(ticked.length>=3?"hi":"mid",ticked.join(", ")):chip("ok",tr("нет","none")))+'</div></div>';
+
+    $("out").innerHTML=out;
+
+    // ---------- verdict
+    var any=labCount>0||d.g0||d.a1c||d.waist||ticked.length;
+    var zone,cls,steps=[],idx;
+    if(!any){
+      $("verdict").innerHTML='<div class="scale-name">'+tr("Метаболический профиль МА","MA metabolic profile")+'</div><div class="zone na">'+tr("Введите данные","Enter your results")+'</div><p class="partial">'+tr("Для начала достаточно глюкозы, инсулина, триглицеридов и ЛПВП натощак.","Fasting glucose, insulin, triglycerides and HDL are enough to start.")+'</p>';return;
+    }
+    if(dm){cls="dm";idx=3;zone=tr("Нужна консультация врача","See a physician");
+      steps=[tr("Один или несколько показателей в диапазоне сахарного диабета. Обратитесь к врачу в ближайшее время для подтверждения и обследования.","One or more results are in the diabetes range. See a physician soon for confirmation and assessment."),tr("До консультации не меняйте резко питание и лекарства самостоятельно.","Until then, avoid drastic changes to diet or medication on your own.")];
+    } else if(score<=3){cls="ok";idx=1;zone=tr("Зона благополучия","Balanced zone");
+      steps=[tr("Поддерживайте текущий режим питания, движения и сна.","Keep up your current eating, activity and sleep habits."),tr("Повторите анализы через 12 месяцев или при изменении веса.","Repeat the tests in 12 months or if your weight changes.")];
+    } else if(score<=8){cls="mid";idx=2;zone=tr("Зона внимания","Attention zone");
+      steps=[tr("Питание с контролем быстрых углеводов и достаточным белком, регулярное движение, включая силовые нагрузки.","Eat with control of fast carbohydrates and enough protein; move regularly, including strength training."),tr("Повторите анализы через 3 месяца в той же лаборатории.","Repeat the tests in 3 months at the same lab.")];
+    } else {cls="hi";idx=3;zone=tr("Зона активных действий","Action zone");
+      steps=[tr("Выраженные признаки инсулинорезистентности. Обсудите результаты с врачом-эндокринологом.","Marked signs of insulin resistance. Discuss the results with an endocrinologist."),tr("Снижение массы тела на 5–10% обычно заметно улучшает показатели уже через 2–3 месяца.","Losing 5–10% of body weight usually improves these markers within 2–3 months."),tr("Контроль анализов через 2–3 месяца.","Recheck in 2–3 months.")];
+    }
+    if(!hasOgtt&&!dm&&cls!=="ok")steps.push(tr("Уточнить картину поможет ОГТТ с определением инсулина.","An OGTT with insulin measurements would clarify the picture."));
+    var meter='<div class="meter">'+[1,2,3].map(function(i){return '<i class="'+(i<=idx?"on ":"")+cls+'"></i>'}).join("")+'</div>';
+    var fac=factors.length?'<div class="factors">'+factors.map(function(x){return chip(x.l,x.n)}).join("")+'</div>':"";
+    var partial=labCount<2?'<p class="partial">'+tr("Оценка неполная: добавьте инсулин, триглицериды и ЛПВП натощак, чтобы рассчитать больше индексов.","Partial assessment: add fasting insulin, triglycerides and HDL to compute more indices.")+'</p>':"";
+    $("verdict").innerHTML='<div class="scale-name">'+tr("Метаболический профиль МА","MA metabolic profile")+'</div><div class="zone '+cls+'">'+zone+'</div>'+meter+'<div class="score">'+tr("Сумма баллов: ","Score: ")+score+(dm?"":tr(" · зоны: 0–3, 4–8, 9 и более"," · zones: 0–3, 4–8, 9+"))+'</div>'+fac+'<ul class="next">'+steps.map(function(s){return "<li>"+s+"</li>"}).join("")+'</ul>'+partial;
+  }
+
+  // ---------- UI plumbing
+  function applyLang(){
+    document.documentElement.lang=st.lang;
+    document.querySelectorAll("[data-ru]").forEach(function(el){el.innerHTML=el.getAttribute("data-"+st.lang)});
+    document.querySelectorAll(".u-c").forEach(function(el){el.textContent=UC()});
+    document.querySelectorAll(".u-i").forEach(function(el){el.textContent=tr("мкЕд/мл","µU/mL")});
+    document.querySelectorAll(".u-cm").forEach(function(el){el.textContent=tr("см","cm")});
+    document.title=tr("Метаболический профиль МА","MA Metabolic Profile");
+  }
+  function setSeg(id,key){document.querySelectorAll("#"+id+" button").forEach(function(b){b.setAttribute("aria-pressed",String(b.getAttribute("data-v")===st[key]))})}
+  function syncSegs(){setSeg("seg-sex","sex");setSeg("seg-units","units");setSeg("seg-lang","lang");$("w-pcos").hidden=$("w-gdm").hidden=st.sex==="m"}
+  function fmtIn(k,mmolVal){var v=st.units==="mg"?mmolVal*factor(k):mmolVal;var s=v.toFixed(dec(k));if(dec(k)>0)s=String(parseFloat(s));return st.lang==="ru"?s.replace(".",","):s}
+  function fillExample(){IDS.forEach(function(k){$(k).value=fmtIn(k,EX_MMOL[k])});CHECKS.forEach(function(c){$(c).checked=false})}
+  function isExample(){return IDS.every(function(k){return $(k).value===fmtIn(k,EX_MMOL[k])})&&CHECKS.every(function(c){return !$(c).checked})}
+  function save(){try{var o={st:st,v:{},c:{}};IDS.forEach(function(k){o.v[k]=$(k).value});CHECKS.forEach(function(c){o.c[c]=$(c).checked});localStorage.setItem(KEY,JSON.stringify(o))}catch(e){}}
+  function update(){$("example-note").hidden=!isExample();calc();save()}
+  function convertUnits(to){
+    if(to===st.units)return;
+    var vals={};IDS.forEach(function(k){vals[k]=mm(k)});
+    st.units=to;
+    IDS.forEach(function(k){if(factor(k)!==1&&vals[k]!=null)$(k).value=fmtIn(k,vals[k])});
+  }
+  function relocalizeNumbers(){IDS.forEach(function(k){var v=$(k).value;$(k).value=st.lang==="ru"?v.replace(".",","):v.replace(",",".")})}
+
+  document.querySelectorAll("#seg-sex button").forEach(function(b){b.addEventListener("click",function(){st.sex=b.getAttribute("data-v");syncSegs();update()})});
+  document.querySelectorAll("#seg-units button").forEach(function(b){b.addEventListener("click",function(){convertUnits(b.getAttribute("data-v"));syncSegs();applyLang();update()})});
+  document.querySelectorAll("#seg-lang button").forEach(function(b){b.addEventListener("click",function(){st.lang=b.getAttribute("data-v");relocalizeNumbers();syncSegs();applyLang();update()})});
+  IDS.forEach(function(k){$(k).addEventListener("input",update)});
+  CHECKS.forEach(function(c){$(c).addEventListener("change",update)});
+  $("btn-example").addEventListener("click",function(){fillExample();update()});
+  $("btn-clear").addEventListener("click",function(){IDS.forEach(function(k){$(k).value=""});CHECKS.forEach(function(c){$(c).checked=false});update();$("g0").focus()});
+
+  var stored=null;try{stored=JSON.parse(localStorage.getItem(KEY)||"null")}catch(e){}
+  if(stored&&stored.st){st.lang=stored.st.lang||"ru";st.units=stored.st.units||"mmol";st.sex=stored.st.sex||"f"}
+  syncSegs();applyLang();
+  if(stored&&stored.v&&IDS.some(function(k){return stored.v[k]})){IDS.forEach(function(k){$(k).value=stored.v[k]||""});CHECKS.forEach(function(c){$(c).checked=!!(stored.c&&stored.c[c])})}
+  else fillExample();
+  update();
+})();
+</script>
+</body>
+</html>
